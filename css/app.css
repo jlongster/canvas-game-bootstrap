@@ -1,0 +1,13 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+
+    /* image-rendering: optimizeSpeed; */
+    /* image-rendering: -moz-crisp-edges; */
+    /* image-rendering: -webkit-optimize-contrast; */
+}
