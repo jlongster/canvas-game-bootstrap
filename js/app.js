@@ -22,13 +22,10 @@ define(function(require) {
     var ctx = canvas.getContext("2d");
     canvas.width = 512;
     canvas.height = 480;
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled = false;
 
     document.body.appendChild(canvas);
 
-    // The player's state
+    // Game state
     var player = {
         x: 0,
         y: 0,
@@ -38,37 +35,34 @@ define(function(require) {
         sprite: new Sprite('img/sprites.png', [0, 0], [39, 39], 16, [0, 1])
     };
 
-    var lasers = [];
-    var laserSprite = new Sprite('img/sprites.png', [0, 39], [18, 8]);
+    var bullets = [];
+    var bulletSprite = new Sprite('img/sprites.png', [0, 39], [18, 8]);
 
     var enemies = [];
+    var explosions = [];
 
     var lastFire = Date.now();
+    var gameTime = 0;
     var isGameOver;
     var terrainPattern;
+
+    // Speed in pixels per second
+    var playerSpeed = 200;
+    var bulletSpeed = 500;
+    var enemySpeed = 100;
 
     // Reset game to original state
     function reset() {
         document.getElementById('game-over').style.display = 'none';
         document.getElementById('game-over-overlay').style.display = 'none';
         isGameOver = false;
+        gameTime = 0;
 
         enemies = [];
-        lasers = [];
+        bullets = [];
 
         player.pos = [50, canvas.height / 2];
     };
-
-    // Pause and unpause
-    function pause() {
-        running = false;
-    }
-
-    function unpause() {
-        running = true;
-        then = Date.now();
-        main();
-    }
 
     // Game over
     function gameOver() {
@@ -79,12 +73,9 @@ define(function(require) {
 
     // Update game objects
     function update(dt) {
-        // Speed in pixels per second
-        var playerSpeed = 200;
+        gameTime += dt;
 
         if(input.isDown('DOWN') || input.isDown('s')) {
-            // dt is the number of seconds passed, so multiplying by
-            // the speed gives u the number of pixels to move
             player.pos[1] += playerSpeed * dt;
         }
 
@@ -102,7 +93,7 @@ define(function(require) {
 
         if(input.isDown('SPACE')) {
             if(!isGameOver && Date.now() - lastFire > 100) {
-                lasers.push({
+                bullets.push({
                     pos: [player.pos[0] + player.sprite.size[0] / 2,
                           player.pos[1] + player.sprite.size[1] / 2]
                 });
@@ -110,6 +101,7 @@ define(function(require) {
             }
         }
 
+        // Check bounds
         if(player.pos[0] < 0) {
             player.pos[0] = 0;
         }
@@ -124,19 +116,22 @@ define(function(require) {
             player.pos[1] = canvas.height - player.sprite.size[1];
         }
 
+        // Update the player sprite animation
         player.sprite.update(dt);
 
-        for(var i=0; i<lasers.length; i++) {
-            lasers[i].pos[0] += 500 * dt;
+        // Update all the bullets
+        for(var i=0; i<bullets.length; i++) {
+            bullets[i].pos[0] += bulletSpeed * dt;
 
-            if(lasers[i].pos[0] > canvas.width) {
-                lasers.splice(i, 1);
+            if(bullets[i].pos[0] > canvas.width) {
+                bullets.splice(i, 1);
                 i--;
             }
         }
 
+        // Update all the enemies
         for(var i=0; i<enemies.length; i++) {
-            enemies[i].pos[0] -= 100 * dt;
+            enemies[i].pos[0] -= enemySpeed * dt;
             enemies[i].sprite.update(dt);
 
             if(enemies[i].pos[0] + enemies[i].sprite.size[0] < 0) {
@@ -145,11 +140,24 @@ define(function(require) {
             }
         }
 
-        if(Math.random() < .1) {
+        // Update all the explosions
+        for(var i=0; i<explosions.length; i++) {
+            explosions[i].sprite.update(dt);
+
+            if(explosions[i].sprite.done) {
+                explosions.splice(i, 1);
+                i--;
+            }
+        }
+
+        // It gets harder over time by adding enemies using this
+        // equation: 1-.993^gameTime
+        if(Math.random() < 1 - Math.pow(.993, gameTime)) {
             enemies.push({
                 pos: [canvas.width,
                       Math.random() * (canvas.height - 39)],
-                sprite: new Sprite('img/sprites.png', [0, 78], [80, 39], 6, [0, 1, 2, 3, 2, 1])
+                sprite: new Sprite('img/sprites.png', [0, 78], [80, 39],
+                                   6, [0, 1, 2, 3, 2, 1])
             });
         }
 
@@ -173,17 +181,28 @@ define(function(require) {
             var pos = enemies[i].pos;
             var size = enemies[i].sprite.size;
 
-            for(var j=0; j<lasers.length; j++) {
-                var pos2 = lasers[j].pos;
-                var size2 = laserSprite.size;
+            for(var j=0; j<bullets.length; j++) {
+                var pos2 = bullets[j].pos;
+                var size2 = bulletSprite.size;
 
                 if(boxCollides(pos, size, pos2, size2)) {
-                    lasers.splice(j, 1);
+                    bullets.splice(j, 1);
                     j--;
 
                     enemies.splice(i, 1);
                     i--;
-                }
+
+                    explosions.push({
+                        pos: pos,
+                        sprite: new Sprite('img/sprites.png',
+                                           [0, 117],
+                                           [39, 39],
+                                           16,
+                                           [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                                           null,
+                                           true)
+                    });
+                 }
             }
 
             if(boxCollides(pos, size, player.pos, player.sprite.size)) {
@@ -197,6 +216,7 @@ define(function(require) {
         ctx.fillStyle = terrainPattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // Render the player if the game isn't over
         if(!isGameOver) {
             ctx.save();
             ctx.translate(player.pos[0], player.pos[1]);
@@ -204,13 +224,14 @@ define(function(require) {
             ctx.restore();
         }
 
-        for(var i=0; i<lasers.length; i++) {
-            var laser = lasers[i];
+        // Render the bullets
+        for(var i=0; i<bullets.length; i++) {
+            var bullet = bullets[i];
 
             ctx.save();
-            ctx.translate(laser.pos[0], laser.pos[1]);
+            ctx.translate(bullet.pos[0], bullet.pos[1]);
 
-            switch(laser.dir) {
+            switch(bullet.dir) {
             case 'up': ctx.rotate(-Math.PI / 2); break;
             case 'left': ctx.rotate(Math.PI); break;
             case 'down': ctx.rotate(Math.PI / 2); break;
@@ -218,10 +239,11 @@ define(function(require) {
                 // The default is pointed right
             }
 
-            laserSprite.render(ctx);
+            bulletSprite.render(ctx);
             ctx.restore();
         }
 
+        // Render the enemies
         for(var i=0; i<enemies.length; i++) {
             var enemy = enemies[i];
 
@@ -230,22 +252,28 @@ define(function(require) {
             enemy.sprite.render(ctx);
             ctx.restore();
         }
+
+        // Render the explosions
+        for(var i=0; i<explosions.length; i++) {
+            var explosion = explosions[i];
+
+            ctx.save();
+            ctx.translate(explosion.pos[0], explosion.pos[1]);
+            explosion.sprite.render(ctx);
+            ctx.restore();
+        }
     };
 
     // The main game loop
-    var then, running;
+    var lastTime;
     function main() {
-        if(!running) {
-            return;
-        }
-
         var now = Date.now();
-        var dt = (now - then) / 1000.0;
+        var dt = (now - lastTime) / 1000.0;
 
         update(dt);
         render();
 
-        then = now;
+        lastTime = now;
         requestAnimFrame(main);
     };
 
@@ -254,23 +282,12 @@ define(function(require) {
 
         document.getElementById('play-again').addEventListener('click', function() {
             reset();
-
         });
 
         reset();
-        then = Date.now();
-        running = true;
+        lastTime = Date.now();
         main();
     }
-
-    // Don't run the game when the tab isn't visible
-    // window.addEventListener('focus', function() {
-    //     unpause();
-    // });
-
-    // window.addEventListener('blur', function() {
-    //     pause();
-    // });
 
     resources.load([
         'img/sprites.png',

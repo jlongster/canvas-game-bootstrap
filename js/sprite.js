@@ -1,15 +1,17 @@
+
 define(function(require) {
     var resources = require('./resources');
 
-    function Sprite(url, pos, size, speed, frames, dir) {
-            this.pos = pos;
-            this.size = size;
-            this.speed = typeof speed === 'number' ? speed : 0;
-            this.frames = frames;
-            this._index = 0;
-            this.url = url;
-            this.scale = [1, 1];
-            this.dir = dir || 'horizontal';
+    function Sprite(url, pos, size, speed, frames, dir, once) {
+        this.pos = pos;
+        this.size = size;
+        this.speed = typeof speed === 'number' ? speed : 0;
+        this.frames = frames;
+        this._index = 0;
+        this.url = url;
+        this.scale = [1, 1];
+        this.dir = dir || 'horizontal';
+        this.once = once;
     };
 
     Sprite.prototype = {
@@ -43,7 +45,13 @@ define(function(require) {
             clip = clip || this.size;
 
             if(this.frames) {
-                frame = this.frames[Math.floor(this._index) % max];
+                var idx = Math.floor(this._index);
+                frame = this.frames[idx % max];
+
+                if(this.once && idx >= max) {
+                    this.done = true;
+                    return;
+                }
             }
             else {
                 frame = Math.floor(this._index % max);
