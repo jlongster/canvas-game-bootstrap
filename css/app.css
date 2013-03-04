@@ -19,6 +19,12 @@ canvas {
     /* image-rendering: -webkit-optimize-contrast; */
 }
 
+#instructions {
+    color: #757575;
+    text-align: center;
+    margin-top: 2em;
+}
+
 #game-over, #game-over-overlay {
     margin: auto;
     width: 512px;
