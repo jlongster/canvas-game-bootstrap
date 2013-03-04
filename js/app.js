@@ -105,9 +105,6 @@ define(function(require) {
 
             if(input.isDown('SPACE')) {
                 bullets.push({ pos: [x, y], dir: 'forward' });
-            }
-
-            if(input.isDown('c') ||  input.isDown('m')) {
                 bullets.push({ pos: [x, y], dir: 'down' });
                 bullets.push({ pos: [x, y], dir: 'up' });
             }
