@@ -1,7 +1,5 @@
 
-define(function(require) {
-    var resources = require('./resources');
-
+(function() {
     function Sprite(url, pos, size, speed, frames, dir, once) {
         this.pos = pos;
         this.size = size;
@@ -77,5 +75,5 @@ define(function(require) {
         }
     };
 
-    return Sprite;
-});
+    window.Sprite = Sprite;
+})();

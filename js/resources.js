@@ -1,5 +1,5 @@
 
-define(function(require) {
+(function() {
     var resourceCache = {};
     var loading = [];
     var readyCallbacks = [];
@@ -52,10 +52,10 @@ define(function(require) {
         readyCallbacks.push(func);
     }
 
-    return { 
+    window.resources = { 
         load: load,
         get: get,
         onReady: onReady,
         ready: ready
     };
-});
+})();

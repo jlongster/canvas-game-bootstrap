@@ -1,5 +1,5 @@
 
-define(function(require) {
+(function() {
     var pressedKeys = {};
 
     function setKey(event, status) {
@@ -37,9 +37,9 @@ define(function(require) {
         pressedKeys = {};
     });
 
-    return {
+    window.input = {
         isDown: function(key) {
             return pressedKeys[key.toUpperCase()];
         }
     };
-});
+})();
