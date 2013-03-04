@@ -36,7 +36,11 @@ define(function(require) {
     };
 
     var bullets = [];
-    var bulletSprite = new Sprite('img/sprites.png', [0, 39], [18, 8]);
+    var bulletSprites = {
+        'up': new Sprite('img/sprites.png', [0, 60], [9, 5]),
+        'down': new Sprite('img/sprites.png', [0, 50], [9, 5]),
+        'forward': new Sprite('img/sprites.png', [0, 39], [18, 8])
+    };
 
     var enemies = [];
     var explosions = [];
@@ -45,6 +49,9 @@ define(function(require) {
     var gameTime = 0;
     var isGameOver;
     var terrainPattern;
+
+    var score = 0;
+    var scoreEl = document.getElementById('score');
 
     // Speed in pixels per second
     var playerSpeed = 200;
@@ -57,6 +64,7 @@ define(function(require) {
         document.getElementById('game-over-overlay').style.display = 'none';
         isGameOver = false;
         gameTime = 0;
+        score = 0;
 
         enemies = [];
         bullets = [];
@@ -91,14 +99,20 @@ define(function(require) {
             player.pos[0] += playerSpeed * dt;
         }
 
-        if(input.isDown('SPACE')) {
-            if(!isGameOver && Date.now() - lastFire > 100) {
-                bullets.push({
-                    pos: [player.pos[0] + player.sprite.size[0] / 2,
-                          player.pos[1] + player.sprite.size[1] / 2]
-                });
-                lastFire = Date.now();
+        if(!isGameOver && Date.now() - lastFire > 100) {
+            var x = player.pos[0] + player.sprite.size[0] / 2;
+            var y = player.pos[1] + player.sprite.size[1] / 2;
+
+            if(input.isDown('SPACE')) {
+                bullets.push({ pos: [x, y], dir: 'forward' });
             }
+
+            if(input.isDown('c') ||  input.isDown('m')) {
+                bullets.push({ pos: [x, y], dir: 'down' });
+                bullets.push({ pos: [x, y], dir: 'up' });
+            }
+
+            lastFire = Date.now();
         }
 
         // Check bounds
@@ -121,7 +135,15 @@ define(function(require) {
 
         // Update all the bullets
         for(var i=0; i<bullets.length; i++) {
-            bullets[i].pos[0] += bulletSpeed * dt;
+            var bullet = bullets[i];
+
+            switch(bullet.dir) {
+            case 'up': bullet.pos[1] += bulletSpeed * dt; break;
+            case 'down': bullet.pos[1] -= bulletSpeed * dt; break;
+            default:
+                bullet.pos[0] += bulletSpeed * dt;
+            }
+                
 
             if(bullets[i].pos[0] > canvas.width) {
                 bullets.splice(i, 1);
@@ -162,6 +184,8 @@ define(function(require) {
         }
 
         checkCollisions();
+
+        scoreEl.innerHTML = score;
     };
 
     function collides(x, y, r, b, x2, y2, r2, b2) {
@@ -183,15 +207,17 @@ define(function(require) {
 
             for(var j=0; j<bullets.length; j++) {
                 var pos2 = bullets[j].pos;
-                var size2 = bulletSprite.size;
+                var size2 = bulletSprites[bullets[j].dir].size;
 
                 if(boxCollides(pos, size, pos2, size2)) {
-                    bullets.splice(j, 1);
-                    j--;
-
+                    // Remove the enemy
                     enemies.splice(i, 1);
                     i--;
 
+                    // Add score
+                    score += 100;
+
+                    // Add an explosion
                     explosions.push({
                         pos: pos,
                         sprite: new Sprite('img/sprites.png',
@@ -202,6 +228,10 @@ define(function(require) {
                                            null,
                                            true)
                     });
+
+                    // Remove the bullet and stop this iteration
+                    bullets.splice(j, 1);
+                    break;
                  }
             }
 
@@ -230,16 +260,7 @@ define(function(require) {
 
             ctx.save();
             ctx.translate(bullet.pos[0], bullet.pos[1]);
-
-            switch(bullet.dir) {
-            case 'up': ctx.rotate(-Math.PI / 2); break;
-            case 'left': ctx.rotate(Math.PI); break;
-            case 'down': ctx.rotate(Math.PI / 2); break;
-            case 'right':
-                // The default is pointed right
-            }
-
-            bulletSprite.render(ctx);
+            bulletSprites[bullet.dir].render(ctx);
             ctx.restore();
         }
 

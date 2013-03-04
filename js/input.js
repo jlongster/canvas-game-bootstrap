@@ -17,6 +17,8 @@ define(function(require) {
             key = 'RIGHT'; break;
         case 40:
             key = 'DOWN'; break;
+        case 188:
+            key = '<'; break;
         default:
             // Convert ASCII codes to letters
             key = String.fromCharCode(code);

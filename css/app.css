@@ -19,10 +19,26 @@ canvas {
     /* image-rendering: -webkit-optimize-contrast; */
 }
 
-#instructions {
-    color: #757575;
-    text-align: center;
+.wrapper {
+    width: 512px;
+    margin: 0 auto;
     margin-top: 2em;
+}
+
+#instructions {
+    float: left;
+    font-family: sans-serif;
+    color: #757575;
+}
+
+#score {
+    float: right;
+    color: white;
+    font-size: 2em;
+}
+
+.key {
+    color: #aaffdd;
 }
 
 #game-over, #game-over-overlay {
