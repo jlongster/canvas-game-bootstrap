@@ -39,7 +39,7 @@ define(function(require) {
 
     return {
         isDown: function(key) {
-            return pressedKeys[key];
+            return pressedKeys[key.toUpperCase()];
         }
     };
 });
