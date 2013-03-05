@@ -16,33 +16,21 @@
             this._index += this.speed*dt;
         },
 
-        getNumFrames: function() {
-            if(this.speed === 0) {
-                return 1;
-            }
-            else if(this.frames) {
-                return this.frames.length;
-            }
-            else {
-                return Math.floor(resources.get(this.url).width / this.size[0]);
-            }
-        },
-
         render: function(ctx) {
             var frame;
-            var max = this.getNumFrames();
 
-            if(this.frames) {
+            if(this.speed > 0) {
+                var max = this.speed === 0 ? 1 : this.frames.length;
                 var idx = Math.floor(this._index);
                 frame = this.frames[idx % max];
-
-                if(this.once && idx >= max) {
-                    this.done = true;
-                    return;
-                }
             }
             else {
-                frame = Math.floor(this._index % max);
+                frame = 0;
+            }
+
+            if(this.once && idx >= max) {
+                this.done = true;
+                return;
             }
 
             var x = this.pos[0];
