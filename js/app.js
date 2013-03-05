@@ -52,21 +52,11 @@ resources.onReady(init);
 
 // Game state
 var player = {
-    x: 0,
-    y: 0,
-    sizeX: 100,
-    sizeY: 100,
-    dir: 'right',
+    pos: [0, 0],
     sprite: new Sprite('img/sprites.png', [0, 0], [39, 39], 16, [0, 1])
 };
 
 var bullets = [];
-var bulletSprites = {
-    'up': new Sprite('img/sprites.png', [0, 60], [9, 5]),
-    'down': new Sprite('img/sprites.png', [0, 50], [9, 5]),
-    'forward': new Sprite('img/sprites.png', [0, 39], [18, 8])
-};
-
 var enemies = [];
 var explosions = [];
 
@@ -82,27 +72,6 @@ var scoreEl = document.getElementById('score');
 var playerSpeed = 200;
 var bulletSpeed = 500;
 var enemySpeed = 100;
-
-// Reset game to original state
-function reset() {
-    document.getElementById('game-over').style.display = 'none';
-    document.getElementById('game-over-overlay').style.display = 'none';
-    isGameOver = false;
-    gameTime = 0;
-    score = 0;
-
-    enemies = [];
-    bullets = [];
-
-    player.pos = [50, canvas.height / 2];
-};
-
-// Game over
-function gameOver() {
-    document.getElementById('game-over').style.display = 'block';
-    document.getElementById('game-over-overlay').style.display = 'block';
-    isGameOver = true;
-}
 
 // Update game objects
 function update(dt) {
@@ -129,9 +98,15 @@ function update(dt) {
         var y = player.pos[1] + player.sprite.size[1] / 2;
 
         if(input.isDown('SPACE')) {
-            bullets.push({ pos: [x, y], dir: 'forward' });
-            bullets.push({ pos: [x, y], dir: 'down' });
-            bullets.push({ pos: [x, y], dir: 'up' });
+            bullets.push({ pos: [x, y],
+                           dir: 'forward',
+                           sprite: new Sprite('img/sprites.png', [0, 60], [9, 5]) });
+            bullets.push({ pos: [x, y],
+                           dir: 'down',
+                           sprite: new Sprite('img/sprites.png', [0, 50], [9, 5]) });
+            bullets.push({ pos: [x, y],
+                           dir: 'up',
+                           sprite: new Sprite('img/sprites.png', [0, 39], [18, 8]) });
         }
 
         lastFire = Date.now();
@@ -232,7 +207,7 @@ function checkCollisions() {
 
         for(var j=0; j<bullets.length; j++) {
             var pos2 = bullets[j].pos;
-            var size2 = bulletSprites[bullets[j].dir].size;
+            var size2 = bullets[j].sprite.size;
 
             if(boxCollides(pos, size, pos2, size2)) {
                 // Remove the enemy
@@ -285,7 +260,7 @@ function render() {
 
         ctx.save();
         ctx.translate(bullet.pos[0], bullet.pos[1]);
-        bulletSprites[bullet.dir].render(ctx);
+        bullet.sprite.render(ctx);
         ctx.restore();
     }
 
@@ -309,3 +284,24 @@ function render() {
         ctx.restore();
     }
 };
+
+// Reset game to original state
+function reset() {
+    document.getElementById('game-over').style.display = 'none';
+    document.getElementById('game-over-overlay').style.display = 'none';
+    isGameOver = false;
+    gameTime = 0;
+    score = 0;
+
+    enemies = [];
+    bullets = [];
+
+    player.pos = [50, canvas.height / 2];
+};
+
+// Game over
+function gameOver() {
+    document.getElementById('game-over').style.display = 'block';
+    document.getElementById('game-over-overlay').style.display = 'block';
+    isGameOver = true;
+}
