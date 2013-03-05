@@ -19,6 +19,37 @@ canvas.width = 512;
 canvas.height = 480;
 document.body.appendChild(canvas);
 
+// The main game loop
+var lastTime;
+function main() {
+    var now = Date.now();
+    var dt = (now - lastTime) / 1000.0;
+
+    update(dt);
+    render();
+
+    lastTime = now;
+    requestAnimFrame(main);
+};
+
+function init() {
+    terrainPattern = ctx.createPattern(resources.get('img/terrain.png'), 'repeat');
+
+    document.getElementById('play-again').addEventListener('click', function() {
+        reset();
+    });
+
+    reset();
+    lastTime = Date.now();
+    main();
+}
+
+resources.load([
+    'img/sprites.png',
+    'img/terrain.png'
+]);
+resources.onReady(init);
+
 // Game state
 var player = {
     x: 0,
@@ -135,8 +166,9 @@ function update(dt) {
             bullet.pos[0] += bulletSpeed * dt;
         }
 
-
-        if(bullets[i].pos[0] > canvas.width) {
+        // Remove the bullet if it goes offscreen
+        if(bullet.pos[1] < 0 || bullet.pos[1] > canvas.height ||
+           bullet.pos[0] > canvas.width) {
             bullets.splice(i, 1);
             i--;
         }
@@ -277,34 +309,3 @@ function render() {
         ctx.restore();
     }
 };
-
-// The main game loop
-var lastTime;
-function main() {
-    var now = Date.now();
-    var dt = (now - lastTime) / 1000.0;
-
-    update(dt);
-    render();
-
-    lastTime = now;
-    requestAnimFrame(main);
-};
-
-function start() {
-    terrainPattern = ctx.createPattern(resources.get('img/terrain.png'), 'repeat');
-
-    document.getElementById('play-again').addEventListener('click', function() {
-        reset();
-    });
-
-    reset();
-    lastTime = Date.now();
-    main();
-}
-
-resources.load([
-    'img/sprites.png',
-    'img/terrain.png'
-]);
-resources.onReady(start);
