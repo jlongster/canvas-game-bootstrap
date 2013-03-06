@@ -13,10 +13,6 @@ canvas {
     bottom: 0;
     left: 0;
     right: 0;
-
-    /* image-rendering: optimizeSpeed; */
-    /* image-rendering: -moz-crisp-edges; */
-    /* image-rendering: -webkit-optimize-contrast; */
 }
 
 .wrapper {

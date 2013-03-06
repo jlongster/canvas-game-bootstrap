@@ -4,6 +4,7 @@
     var loading = [];
     var readyCallbacks = [];
 
+    // Load an image url or an array of image urls
     function load(urlOrArr) {
         if(urlOrArr instanceof Array) {
             urlOrArr.forEach(function(url) {
@@ -24,7 +25,7 @@
             img.onload = function() {
                 resourceCache[url] = img;
                 
-                if(ready()) {
+                if(isReady()) {
                     readyCallbacks.forEach(function(func) { func(); });
                 }
             };
@@ -37,7 +38,7 @@
         return resourceCache[url];
     }
 
-    function ready() {
+    function isReady() {
         var ready = true;
         for(var k in resourceCache) {
             if(resourceCache.hasOwnProperty(k) &&
@@ -56,6 +57,6 @@
         load: load,
         get: get,
         onReady: onReady,
-        ready: ready
+        isReady: isReady
     };
 })();

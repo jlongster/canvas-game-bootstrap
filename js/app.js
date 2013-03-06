@@ -74,88 +74,6 @@ var bulletSpeed = 500;
 var enemySpeed = 100;
 
 // Update game objects
-function handleInput(dt) {
-    if(input.isDown('DOWN') || input.isDown('s')) {
-        player.pos[1] += playerSpeed * dt;
-    }
-
-    if(input.isDown('UP') || input.isDown('w')) {
-        player.pos[1] -= playerSpeed * dt;
-    }
-
-    if(input.isDown('LEFT') || input.isDown('a')) {
-        player.pos[0] -= playerSpeed * dt;
-    }
-
-    if(input.isDown('RIGHT') || input.isDown('d')) {
-        player.pos[0] += playerSpeed * dt;
-    }
-
-    if(!isGameOver && Date.now() - lastFire > 100) {
-        var x = player.pos[0] + player.sprite.size[0] / 2;
-        var y = player.pos[1] + player.sprite.size[1] / 2;
-
-        if(input.isDown('SPACE')) {
-            bullets.push({ pos: [x, y],
-                           dir: 'forward',
-                           sprite: new Sprite('img/sprites.png', [0, 60], [9, 5]) });
-            bullets.push({ pos: [x, y],
-                           dir: 'down',
-                           sprite: new Sprite('img/sprites.png', [0, 50], [9, 5]) });
-            bullets.push({ pos: [x, y],
-                           dir: 'up',
-                           sprite: new Sprite('img/sprites.png', [0, 39], [18, 8]) });
-        }
-
-        lastFire = Date.now();
-    }
-}
-
-function updateEntities(dt) {
-    // Update the player sprite animation
-    player.sprite.update(dt);
-
-    // Update all the bullets
-    for(var i=0; i<bullets.length; i++) {
-        var bullet = bullets[i];
-
-        switch(bullet.dir) {
-        case 'up': bullet.pos[1] += bulletSpeed * dt; break;
-        case 'down': bullet.pos[1] -= bulletSpeed * dt; break;
-        default:
-            bullet.pos[0] += bulletSpeed * dt;
-        }
-
-        // Remove the bullet if it goes offscreen
-        if(bullet.pos[1] < 0 || bullet.pos[1] > canvas.height ||
-           bullet.pos[0] > canvas.width) {
-            bullets.splice(i, 1);
-            i--;
-        }
-    }
-
-    // Update all the enemies
-    for(var i=0; i<enemies.length; i++) {
-        enemies[i].pos[0] -= enemySpeed * dt;
-        enemies[i].sprite.update(dt);
-
-        if(enemies[i].pos[0] + enemies[i].sprite.size[0] < 0) {
-            enemies.splice(i, 1);
-            i--;
-        }
-    }
-
-    // Update all the explosions
-    for(var i=0; i<explosions.length; i++) {
-        explosions[i].sprite.update(dt);
-
-        if(explosions[i].sprite.done) {
-            explosions.splice(i, 1);
-            i--;
-        }
-    }
-}
-
 function update(dt) {
     gameTime += dt;
 
@@ -178,6 +96,90 @@ function update(dt) {
     scoreEl.innerHTML = score;
 };
 
+function handleInput(dt) {
+    if(input.isDown('DOWN') || input.isDown('s')) {
+        player.pos[1] += playerSpeed * dt;
+    }
+
+    if(input.isDown('UP') || input.isDown('w')) {
+        player.pos[1] -= playerSpeed * dt;
+    }
+
+    if(input.isDown('LEFT') || input.isDown('a')) {
+        player.pos[0] -= playerSpeed * dt;
+    }
+
+    if(input.isDown('RIGHT') || input.isDown('d')) {
+        player.pos[0] += playerSpeed * dt;
+    }
+
+    if(input.isDown('SPACE') &&
+       !isGameOver &&
+       Date.now() - lastFire > 100) {
+        var x = player.pos[0] + player.sprite.size[0] / 2;
+        var y = player.pos[1] + player.sprite.size[1] / 2;
+
+        bullets.push({ pos: [x, y],
+                       dir: 'forward',
+                       sprite: new Sprite('img/sprites.png', [0, 39], [18, 8]) });
+        bullets.push({ pos: [x, y],
+                       dir: 'up',
+                       sprite: new Sprite('img/sprites.png', [0, 50], [9, 5]) });
+        bullets.push({ pos: [x, y],
+                       dir: 'down',
+                       sprite: new Sprite('img/sprites.png', [0, 60], [9, 5]) });
+
+        lastFire = Date.now();
+    }
+}
+
+function updateEntities(dt) {
+    // Update the player sprite animation
+    player.sprite.update(dt);
+
+    // Update all the bullets
+    for(var i=0; i<bullets.length; i++) {
+        var bullet = bullets[i];
+
+        switch(bullet.dir) {
+        case 'up': bullet.pos[1] -= bulletSpeed * dt; break;
+        case 'down': bullet.pos[1] += bulletSpeed * dt; break;
+        default:
+            bullet.pos[0] += bulletSpeed * dt;
+        }
+
+        // Remove the bullet if it goes offscreen
+        if(bullet.pos[1] < 0 || bullet.pos[1] > canvas.height ||
+           bullet.pos[0] > canvas.width) {
+            bullets.splice(i, 1);
+            i--;
+        }
+    }
+
+    // Update all the enemies
+    for(var i=0; i<enemies.length; i++) {
+        enemies[i].pos[0] -= enemySpeed * dt;
+        enemies[i].sprite.update(dt);
+
+        // Remove if offscreen
+        if(enemies[i].pos[0] + enemies[i].sprite.size[0] < 0) {
+            enemies.splice(i, 1);
+            i--;
+        }
+    }
+
+    // Update all the explosions
+    for(var i=0; i<explosions.length; i++) {
+        explosions[i].sprite.update(dt);
+
+        // Remove if animation is done
+        if(explosions[i].sprite.done) {
+            explosions.splice(i, 1);
+            i--;
+        }
+    }
+}
+
 // Collisions
 
 function collides(x, y, r, b, x2, y2, r2, b2) {
@@ -193,21 +195,9 @@ function boxCollides(pos, size, pos2, size2) {
 }
 
 function checkCollisions() {
-    // Check bounds
-    if(player.pos[0] < 0) {
-        player.pos[0] = 0;
-    }
-    else if(player.pos[0] > canvas.width - player.sprite.size[0]) {
-        player.pos[0] = canvas.width - player.sprite.size[0];
-    }
-
-    if(player.pos[1] < 0) {
-        player.pos[1] = 0;
-    }
-    else if(player.pos[1] > canvas.height - player.sprite.size[1]) {
-        player.pos[1] = canvas.height - player.sprite.size[1];
-    }
-
+    checkPlayerBounds();
+    
+    // Run collision detection for all enemies and bullets
     for(var i=0; i<enemies.length; i++) {
         var pos = enemies[i].pos;
         var size = enemies[i].sprite.size;
@@ -248,6 +238,23 @@ function checkCollisions() {
     }
 }
 
+function checkPlayerBounds() {
+    // Check bounds
+    if(player.pos[0] < 0) {
+        player.pos[0] = 0;
+    }
+    else if(player.pos[0] > canvas.width - player.sprite.size[0]) {
+        player.pos[0] = canvas.width - player.sprite.size[0];
+    }
+
+    if(player.pos[1] < 0) {
+        player.pos[1] = 0;
+    }
+    else if(player.pos[1] > canvas.height - player.sprite.size[1]) {
+        player.pos[1] = canvas.height - player.sprite.size[1];
+    }
+}
+
 // Draw everything
 function render() {
     ctx.fillStyle = terrainPattern;
@@ -255,42 +262,33 @@ function render() {
 
     // Render the player if the game isn't over
     if(!isGameOver) {
-        ctx.save();
-        ctx.translate(player.pos[0], player.pos[1]);
-        player.sprite.render(ctx);
-        ctx.restore();
+        renderEntity(player);
     }
 
-    // Render the bullets
-    for(var i=0; i<bullets.length; i++) {
-        var bullet = bullets[i];
-
-        ctx.save();
-        ctx.translate(bullet.pos[0], bullet.pos[1]);
-        bullet.sprite.render(ctx);
-        ctx.restore();
-    }
-
-    // Render the enemies
-    for(var i=0; i<enemies.length; i++) {
-        var enemy = enemies[i];
-
-        ctx.save();
-        ctx.translate(enemy.pos[0], enemy.pos[1]);
-        enemy.sprite.render(ctx);
-        ctx.restore();
-    }
-
-    // Render the explosions
-    for(var i=0; i<explosions.length; i++) {
-        var explosion = explosions[i];
-
-        ctx.save();
-        ctx.translate(explosion.pos[0], explosion.pos[1]);
-        explosion.sprite.render(ctx);
-        ctx.restore();
-    }
+    renderEntities(bullets);
+    renderEntities(enemies);
+    renderEntities(explosions);
 };
+
+function renderEntities(list) {
+    for(var i=0; i<list.length; i++) {
+        renderEntity(list[i]);
+    }    
+}
+
+function renderEntity(entity) {
+    ctx.save();
+    ctx.translate(entity.pos[0], entity.pos[1]);
+    entity.sprite.render(ctx);
+    ctx.restore();
+}
+
+// Game over
+function gameOver() {
+    document.getElementById('game-over').style.display = 'block';
+    document.getElementById('game-over-overlay').style.display = 'block';
+    isGameOver = true;
+}
 
 // Reset game to original state
 function reset() {
@@ -305,10 +303,3 @@ function reset() {
 
     player.pos = [50, canvas.height / 2];
 };
-
-// Game over
-function gameOver() {
-    document.getElementById('game-over').style.display = 'block';
-    document.getElementById('game-over-overlay').style.display = 'block';
-    isGameOver = true;
-}
