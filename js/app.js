@@ -74,9 +74,7 @@ var bulletSpeed = 500;
 var enemySpeed = 100;
 
 // Update game objects
-function update(dt) {
-    gameTime += dt;
-
+function handleInput(dt) {
     if(input.isDown('DOWN') || input.isDown('s')) {
         player.pos[1] += playerSpeed * dt;
     }
@@ -111,22 +109,9 @@ function update(dt) {
 
         lastFire = Date.now();
     }
+}
 
-    // Check bounds
-    if(player.pos[0] < 0) {
-        player.pos[0] = 0;
-    }
-    else if(player.pos[0] > canvas.width - player.sprite.size[0]) {
-        player.pos[0] = canvas.width - player.sprite.size[0];
-    }
-
-    if(player.pos[1] < 0) {
-        player.pos[1] = 0;
-    }
-    else if(player.pos[1] > canvas.height - player.sprite.size[1]) {
-        player.pos[1] = canvas.height - player.sprite.size[1];
-    }
-
+function updateEntities(dt) {
     // Update the player sprite animation
     player.sprite.update(dt);
 
@@ -169,6 +154,13 @@ function update(dt) {
             i--;
         }
     }
+}
+
+function update(dt) {
+    gameTime += dt;
+
+    handleInput(dt);
+    updateEntities(dt);
 
     // It gets harder over time by adding enemies using this
     // equation: 1-.993^gameTime
@@ -201,6 +193,21 @@ function boxCollides(pos, size, pos2, size2) {
 }
 
 function checkCollisions() {
+    // Check bounds
+    if(player.pos[0] < 0) {
+        player.pos[0] = 0;
+    }
+    else if(player.pos[0] > canvas.width - player.sprite.size[0]) {
+        player.pos[0] = canvas.width - player.sprite.size[0];
+    }
+
+    if(player.pos[1] < 0) {
+        player.pos[1] = 0;
+    }
+    else if(player.pos[1] > canvas.height - player.sprite.size[1]) {
+        player.pos[1] = canvas.height - player.sprite.size[1];
+    }
+
     for(var i=0; i<enemies.length; i++) {
         var pos = enemies[i].pos;
         var size = enemies[i].sprite.size;
