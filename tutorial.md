@@ -7,7 +7,7 @@ Using canvas is simple: just create a `<canvas>` tag, create a rendering context
 
 In this article, we're going to create a 2d game with canvas; a real game with sprites, animations, collision detection, and of course, explosions! What's a game without explosions?
 
-This is the game we're going to make ([play it here](http://jlongster.github.com/canvas-game-bootstrap/)). I recommend that you check out the [source code](https://github.com/jlongster/canvas-game-bootstrap) and run the game locally by opening `index.html`.
+This is the game we're going to make ([play it here](http://jlongster.github.com/canvas-game-bootstrap/)). I wrapped this up into a [game bootstrap](https://github.com/jlongster/canvas-game-bootstrap) project that you can use to quickly get started. I recomend checking out the source and running it locally by opening `index.html`.
 
 [![](http://jlongster.com/s/canvas-tutorial/screenshot.png)](http://jlongster.github.com/canvas-game-bootstrap/)
 
@@ -760,10 +760,24 @@ image-rendering: -webkit-optimize-contrast;
 
 Ideally you would scale the width and height of the canvas for small screens like mobile and big screen, but I'll leave that up to you! You could start with a small size, check the window size and if it's big enough set CSS properties to scale it up more.
 
+## Adding Sounds
+
+This article focuses on rendering games with canvas, and skips over audio integration. I won't go into detail about it, but I'll point you to some resources to help you integrate sounds.
+
+Unfortunately the web hasn't quite converged on a single audio API yet (as of March 2013). The [`audio`](https://developer.mozilla.org/en-US/docs/HTML/Element/audio) tag exists, of course, but for games we really need an API to play multiple sounds at once and have fine-grained control over them.
+
+The [Web Audio API](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) is great for this, but is [only supported](http://caniuse.com/#feat=audio-api) in webkit-based browsers. Firefox has had the [Audio Data API](https://wiki.mozilla.org/Audio_Data_API) for a long time, but it looks like the Web Audio API has won and Firefox [will be implementing it soon](http://www.html5audio.org/2012/08/mozilla-announces-web-audio-api-intentions.html), most likely with other browsers following suit.
+
+Until then, you'll need to support both APIs if you want a cross-platform game. [This article](http://www.html5rocks.com/en/tutorials/webaudio/intro/) is a great intro to the Web Audio API, and [this page](https://wiki.mozilla.org/Audio_Data_API) has several examples for the Audio Data API.
+
+Eventually the [game bootstrap](https://github.com/jlongster/canvas-game-bootstrap/) project will include sample code for audio integration. That might call for another blog post!
+
+I don't know if IE has an audio API. Preferraby, a cross-browser shim would exist to unify these APIs today, but I'm unaware of such a thing.
+
 ## Final Thoughts
 
 There's a lot to learn here, but I hope I've broken it down to simple enough pieces to show that making games is not that crazy. It just takes time to learn all the pieces needed. Please leave questions in the comments and I'd be happy to answer them!
 
-I focused on using the raw canvas API to shine some light on how easy it is to create 2d games in the browser these days. Of course, there are [several game engines](https://www.google.com/search?hl=en&q=javascript+game+engine&oq=javascript+game+engine&gs_l=serp.12..0j0i7l2j0j0i7l6.13246.13246.0.13920.1.1.0.0.0.0.167.167.0j1.1.0.les%3Bckwqrh..0.0...1..5.serp.qmeKhSoA9fA) that you can use if you want to get really complex.
+I focused on using the raw canvas API to shine some light on how easy it is to create 2d games in the browser these days. Of course, there are [several game engines](https://www.google.com/search?hl=en&q=javascript+game+engine&oq=javascript+game+engine&gs_l=serp.12..0j0i7l2j0j0i7l6.13246.13246.0.13920.1.1.0.0.0.0.167.167.0j1.1.0.les%3Bckwqrh..0.0...1..5.serp.qmeKhSoA9fA) that you can use if you want to get really complex. Most game engines standardize the interface for an entity, so all you have to do is define an `update` and `render` function for each type and a scene manager automatically calls them for all entities each frame.
 
 Hey *you*, go create games like [our example game](http://jlongster.github.com/canvas-game-bootstrap/)!
