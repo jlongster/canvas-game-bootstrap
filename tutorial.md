@@ -277,7 +277,7 @@ This is the constructor for the `Sprite` class. It takes quite a number of argum
 
 * `url`: the path to the image for this sprite
 * `pos`: the x and y coordinate in the image for this sprite
-* `size`: size of the sprite
+* `size`: size of the sprite (just one keyframe)
 * `speed`: speed in frames/sec for animating
 * `frames`: an array of frame indexes for animating: [0, 1, 2, 1]
 * `dir`: which direction to move in the sprite map when animating: 'horizontal' (default) or 'vertical'
